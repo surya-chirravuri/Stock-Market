@@ -1,0 +1,293 @@
+
+<html lang="en" ng-app = "firstApplication" ng-controller="control" ng-init="showme=false;charts=false;processComplete=false;">
+  <head>
+    <meta charset="utf-8">
+    <title>StockMarket</title>
+    <base href="/">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel = "stylesheet"
+    href = "https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.css">
+  <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+  <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-animate.min.js"></script>
+  <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-aria.min.js"></script>
+  <script src = "https://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular-messages.min.js"></script>
+  <script src = "https://ajax.googleapis.com/ajax/libs/angular_material/1.0.0/angular-material.min.js"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.2.1.slim.min.js"
+  integrity="sha256-k2WSCIexGzOj3Euiig+TlR8gA0EmPjuc79OEeY5L45g="
+  crossorigin="anonymous"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+  <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap-toggle.min.css" rel="stylesheet">
+  <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap-toggle.min.js"></script>
+  <script src="https://code.highcharts.com/stock/highstock.js"></script>
+  <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+ 
+  <style type="text/css">
+        md-autocomplete md-autocomplete-wrap md-progress-linear{
+          display:none;
+        }
+        md-autocomplete button{
+          display:none;
+        }
+        .animate-hide {
+          -webkit-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 2s;
+          -moz-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 2s;
+            -o-transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 2s;
+              transition:all cubic-bezier(0.250, 0.460, 0.450, 0.940) 2s;
+            line-height:20px;
+            opacity:1;
+            
+            border:1px solid grey;
+            border-radius:5px;
+            margin-left:2%;
+            padding:2%;
+            width:97%;
+            background:white;
+            position: absolute;
+            left: 0;
+          }
+          
+          .animate-hide.ng-hide {
+            left: -100%;
+            opacity:0;
+            padding:0 10px;
+          }
+  </style>
+  <script src="http://www-scf.usc.edu/~chirravu/HW8/controller.js"></script>
+  </head>
+  <body style="background-image:url(http://cs-server.usc.edu:45678/hw/hw8/images/background.png); height:210%" ng-controller = "autoCompleteController as ctrl" ng-cloak>
+    <div style=" padding-left:2%; height: 100%;" >
+       <br/>
+       <div class="row" style="margin-left:5px;width:98%;background-color:white; border:1px solid grey; border-radius:5px;">
+       <form method="get" name="searchForm">
+       <h4 align="center"><b>Stock Market Search</b></h4>
+       <div class="col-md-3">
+           <strong>Enter Stock Ticker Symbol:</strong><span style="color:red">*</span>
+       </div>
+       <div class="col-md-5">
+               <md-autocomplete flex required md-input-name="autocompleteField"
+                md-selected-item = "ctrl.selectedItem" md-search-text-change = "ctrl.searchTextChange(ctrl.searchText)"
+               md-search-text = "ctrl.searchText"
+               md-selected-item-change = "ctrl.selectedItemChange(item)"
+               md-items = "item in ctrl.querySearch(ctrl.searchText)"
+               md-item-text = "item.Symbol"
+               md-min-length = "0"
+               md-require-match
+               placeholder = "e.g. AAPL">
+               <md-item-template>
+                  <span md-highlight-text = "ctrl.searchText"
+                     md-highlight-flags = "i">{{item.Symbol}}-{{item.Name}}({{item.Exchange}})</span>
+               </md-item-template>
+               <md-not-found>
+               </md-not-found>
+            </md-autocomplete>
+            <p id="error"></p>
+       </div>
+       <div class="col-md-3" >
+               <button type="button" class="btn btn-primary" ng-click="display(ctrl.searchText)"><span class="glyphicon glyphicon-search"></span> Get Quote</button>
+               <button type="button" class="btn btn-default" ng-click="clear(); ctrl.symbol();" ><span class="glyphicon glyphicon-refresh"></span> Clear</button>  
+       </div>
+         <br/>
+       </form>
+         <br/><br/><br/>
+       </div>
+       <hr>
+       <div style="background-color:white">
+               <div class="container animate-hide" ng-show="showme" id="div">  
+                 <div class="panel panel-default" style=" width:100%">
+                    <div class="panel-heading" style="height:60; padding-top:1.5%;">
+                       <div class="col-md-6 col-sm-4 col-xs-4"><button type="button" class="btn btn-default" ng-click="showme=false"><span class="glyphicon glyphicon-chevron-left"></span></button></div> 
+                         <div class="panel-title"><div class="col-md-6 col-sm-4 col-xs-6"><b> Stock Details </b></div></div>
+                    </div>
+                       <div class="panel-body">
+                         <ul class="nav nav-pills" role="tablist">
+                             <li role="presentation" class="active"><a href="#cstock" aria-controls="home" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-time"></span> Current Stock</a></li>
+                             <li role="presentation"><a ng-click="historical(ctrl.searchText)"href="#hstock" aria-controls="profile" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-stats"></span>Historical Charts </a></li>
+                             <li role="presentation"><a ng-click="news(ctrl.searchText)"href="#feed" aria-controls="messages" role="tab" data-toggle="tab"><span class="glyphicon glyphicon-link"></span>News Feed </a></a></li>
+                         </ul>
+                         <hr>
+                                         <!-- Tab panes -->
+                         <div class="tab-content">
+                           <div role="tabpanel" class="tab-pane active" id="cstock">
+                               <div ng-hide="processComplete" class="progress" style="width: 40%;">
+                                 <div class="progress-bar progress-bar-striped active" roll="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                                   </div>
+                                               </div>
+                                             <div class="row">
+                                                  
+                                               <div class="col-md-6">
+                                           <div ng-show="processComplete">
+                                            <table class="table table-striped" width="50%">
+                                              <thead>
+                                                <td>Stock Details</td>
+                                               <td><button id="fclick"  ng-click="fav()"><span id="favcol" ng-class="{'glyphicon glyphicon-star-empty' : !isCollapsed, 'glyphicon glyphicon-star' : isCollapsed}"></span></button>
+                                                  <button><img src="http://cs-server.usc.edu:45678/hw/hw8/images/facebook.png" height=20 width=20></button></td>
+                                                                                            </thead>
+                                            <tbody>
+                                              <tr><th>Stock Ticker Symbol</th><td>{{symbol}}</td></tr>
+                                              <tr>
+                                                <th>Last Price</th>
+                                                <td>{{last}}</td>
+                                              </tr>
+                                              <tr>
+                                                <th>Change (Change percent)</th>
+                                                <td id="per" style="color:white">{{change}}<img src="" height="8px" width="10px" id="arrow"></td>
+                                              </tr>
+                                              <tr>
+                                               <th> Timestamp</th>
+                                               <td>{{time}}</td>
+                                              </tr>
+                                              <tr>
+                                              <th> Open </th>
+                                              <td>{{open}}</td>
+                                              </tr>
+                                              <tr>
+                                              <th> Close</th>
+                                              <td>{{close}}</td>
+                                              </tr>
+                                              <tr>
+                                              <th> Day's Range</th>
+                                              <td>{{range}}</td>
+                                              </tr>
+                                              <tr>
+                                              <th> Volume</th>
+                                              <td>{{volume}}</td>
+                                              </tr>
+                                            </tbody>
+                                            </table>
+                                           </div>      
+                                            </div>
+                                            
+                                            
+                                               <div class="col-md-6">
+                                                 <div>
+                                                       <ul class="nav nav-tabs" role="tablist" >
+                                                               <li role="presentation" class="active"><a  href="#Price" aria-controls="Price" role="tab" data-toggle="tab"> Price</a></li>
+                                                               <li role="presentation"><a  href="#SMA" aria-controls="SMA" role="tab" data-toggle="tab">SMA</a></li>
+                                                               <li role="presentation"><a  href="#EMA" aria-controls="EMA" role="tab" data-toggle="tab">EMA</a></li>
+                                                               <li role="presentation"><a  href="#STOCH" aria-controls="STOCH" role="tab" data-toggle="tab">STOCH</a></li>
+                                                               <li role="presentation"><a  href="#RSI" aria-controls="RSI" role="tab" data-toggle="tab">RSI</a></li>
+                                                               <li role="presentation"><a  href="#ADX" aria-controls="ADX" role="tab" data-toggle="tab">ADX</a></li>
+                                                               <li role="presentation"><a  href="#CCI" aria-controls="CCI" role="tab" data-toggle="tab">CCI</a></li>
+                                                               <li role="presentation"><a  href="#BBANDS" aria-controls="BBANDS" role="tab" data-toggle="tab">BBANDS</a></li>
+                                                               <li role="presentation"><a  href="#MACD" aria-controls="MACD" role="tab" data-toggle="tab">MACD</a></li>
+                                                             </ul>
+                                                    <!-- Tab panes -->
+                                                    <div class="tab-content">
+                                                       <div  ng-hide="charts" class="progress"style="width: 40%;">
+                                                           <div class="progress-bar progress-bar-striped active" roll="progressbar" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100" style="width: 50%">
+                                                             </div>    
+                                                            </div>
+                                                     <div ng-show="charts"role="tabpanel" class="tab-pane active" id="Price">
+                                                     </div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="SMA"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="EMA"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="STOCH"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="RSI"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="ADX"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="CCI"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="BBANDS"></div>
+                                                     <div ng-show="charts" role="tabpanel" class="tab-pane" id="MACD"></div>
+                                                   
+                                                   </div>
+                                                   <div id="container"></div>
+                                                 </div> 
+                                             </div>    
+                                                 
+                                            </div>
+                                            
+                                           </div>
+                                           <div role="tabpanel" class="tab-pane" id="hstock"></div>
+                                           <div role="tabpanel" class="tab-pane" id="feed">
+                                               <div class="container">
+                                                   <div class="panel-group">
+                                                     <div class="panel panel-default" style="width:90%">
+                                                       <div class="panel-heading" id="ph1"></div>
+                                                       <div class="panel-heading" id="pb1"></div>
+                                                     </div>
+                                                 
+                                                     <div class="panel panel-default" style="width:90%">
+                                                       <div class="panel-heading" id="ph2"></div>
+                                                       <div class="panel-heading" id="pb2"></div>
+                                                     </div>
+                                                 
+                                                     <div class="panel panel-default" style="width:90%">
+                                                       <div class="panel-heading" id="ph3"></div>
+                                                       <div class="panel-heading" id="pb3"></div>
+                                                     </div>
+                                                 
+                                                     <div class="panel panel-default" style="width:90%">
+                                                       <div class="panel-heading" id="ph4"></div>
+                                                       <div class="panel-heading" id="pb4"></div>
+                                                     </div>
+                                                 
+                                                     <div class="panel panel-default" style="width:90%">
+                                                       <div class="panel-heading" id="ph5"></div>
+                                                       <div class="panel-heading" id="pb5"></div>
+                                                     </div>
+                                                     
+                                                   </div>
+                                                 </div>
+                                            </div>
+                                    </div>
+                      </div>
+                     </div>
+                   </div> 
+           <div class="container animate-hide" ng-hide="showme">  
+           <div class="panel panel-default" style=" width:100%">
+               <div class="panel-heading" style="height:70;">
+               <div class="panel-title" ><div class="col-md-8 col-sm-4" style=" padding-top:1%"><b>Favorite List</b></div></div>
+               <div class="col-md-4  col-sm-4 ">
+                         Automatic Refresh:
+                         <input type="checkbox" data-toggle="toggle"> 
+                         <button type="button" class="btn btn-default"><span class="glyphicon glyphicon-refresh"></span></button>
+                         <button type="button" class="btn btn-default" ng-click="showme=true"><span class="glyphicon glyphicon-chevron-right" ></span></button>
+               </div>
+             </div>
+               <div class="panel-body">
+                 <div class="row">
+                   <div class="col-md-1"style="margin-left:0.7%"><b>Sort By</b></div>
+                   <div class="col-md-2"> 
+                           <select id="sortby" ng-model="sel1" ng-change="sort()">
+                                   <option value="Default" selected="selected"><a>Default</a></option>
+                                   <option value="Symbol"><a>Symbol</a></option>
+                                   <option value="Symbol"><a>Price</a></option>
+                                   <option value="Change"><a>Change</a></option>
+                                   <option value="Change Percent"><a>Change Percent</a></option>
+                                   <option value="Volume"><a>Volume</a></option>
+                           </select>
+                   </div>
+                   <div class="col-md-1"><b>Order</b></div>
+                   <div class="col-md-2"> 
+                           <select id="order" ng-model="sel2" ng-change="sort()">
+                                   <option value="Ascending">Ascending</option>
+                                   <option value="Descending">Descending</option>
+                           </select>
+                   </div>    
+               </div><hr/>
+               <table class="table table-striped" width="50%" id="favTable">
+                 <thead>
+                   <td class="col-md-1"><b>Symbol</b></td>
+                   <td class="col-md-3"><b>Stock Price</b></td>
+                   <td class="col-md-5"><b>Change(Change Percent)</b></td>
+                   <td class="col-md-2"><b>Volume</b></td>
+                   <td class="col-md-1">  </td>
+                 </thead>
+                 <tbody id="favBody">
+   
+                 </tbody>
+               </table>
+             </div>
+           </div>
+         </div>
+       </div>
+                  
+    </div>
+  
+   </body>
+   </html>
